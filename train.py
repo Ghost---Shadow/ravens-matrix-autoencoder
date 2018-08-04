@@ -40,7 +40,7 @@ for index, sample in enumerate(X[INDICES]):
     tf.reset_default_graph()
     with tf.Session() as sess:
         M = Model(sess, logdir='./logs/' + str(index))
-        print('Training Sample ' + str(index))
+        print('Training Sample ' + str(INDICES[index]))
         D_ARRAY = []
         for epoch in range(0, EPOCHS + 1, STEP):
             M.fit(sess, sample, STEP)

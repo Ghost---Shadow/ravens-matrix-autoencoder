@@ -17,7 +17,7 @@ INPUT_FILE = './data/processed.npy'
 X = np.load(INPUT_FILE)
 X /= 255
 
-EPOCHS = 1000
+EPOCHS = 10000
 STEP = 100
 
 
@@ -29,26 +29,30 @@ def plot(i, d_array):
 
     d_array = np.stack(d_array)
 
-    x_len = len(d_array[0])
-    for x_axis, y_axis in enumerate(d_array):
-        plt.bar(np.arange(x_len) + x_len * x_axis, y_axis)
+    plt.plot(d_array)
+    plt.legend(['Option %d'%(i+1) for i in range(8)], loc='upper left')
 
 
 INDICES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+# INDICES = [9,10]
 
 for index, sample in enumerate(X[INDICES]):
     tf.reset_default_graph()
     with tf.Session() as sess:
-        M = Model(sess, logdir='./logs/' + str(index))
+        M = Model(sess, logdir='./logs/' + str(INDICES[index]))
         print('Training Sample ' + str(INDICES[index]))
         D_ARRAY = []
         for epoch in range(0, EPOCHS + 1, STEP):
-            M.fit(sess, sample, STEP)
+
+            if epoch < EPOCHS / 2:
+                M.fit_autoencoder(sess, sample, STEP)
+            else:
+                M.fit(sess, sample, STEP)
 
             if epoch % STEP == 0:
                 print(epoch)
                 D_ARRAY.append(M.save_summaries(sess, sample, epoch))
-        plot(index, D_ARRAY)
+        plot(INDICES[index], D_ARRAY)
         D_ARRAY = []
         M.close()
 plt.show()

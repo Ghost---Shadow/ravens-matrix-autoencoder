@@ -220,6 +220,16 @@ class Model:
         for _ in range(steps):
             sess.run(fetches, feed_dict)
 
+    def fit_autoencoder(self, sess, input_data, steps):
+        '''
+        Only fit the autoencoder
+        '''
+        input_data = input_data.reshape([16, 64, 64, 1])
+        fetches = [self.opt['autoenc']]
+        feed_dict = {self.img_placeholder: input_data}
+        for _ in range(steps):
+            sess.run(fetches, feed_dict)
+
     def save_summaries(self, sess, input_data, epoch):
         '''
         Writes the tf.summary to disk

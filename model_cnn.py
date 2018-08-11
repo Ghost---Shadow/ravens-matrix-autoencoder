@@ -5,6 +5,8 @@ CNN Model for the Raven Matrix Autoencoder
 import tensorflow as tf
 import numpy as np
 
+from constants import A1, A2, A3, B1, B2, B3, C1, C2, O1, O2, O3, O4, O5, O6, O7, O8
+
 
 class Model:
     '''
@@ -148,8 +150,8 @@ class Model:
         '''
         # Get the first two examples
         with tf.name_scope("gather_tensors"):
-            x_1 = tf.gather(x_input, [0, 3, 6])
-            x_2 = tf.gather(x_input, [1, 4, 7])
+            x_1 = tf.gather(x_input, [A1, B1, C1, A1, A2, A3])
+            x_2 = tf.gather(x_input, [A2, B2, C2, B1, B2, B3])
 
         # Get the encoded results
         with tf.name_scope("encode_gathered"):
@@ -174,14 +176,23 @@ class Model:
 
         # Image summaries
         with tf.name_scope("image_summaries"):
-            tf.summary.image('a3',
+            tf.summary.image('A3',
                              tf.reshape(regressed_imgs[0],
                                         self.shapes['img_shape']))
-            tf.summary.image('b3',
+            tf.summary.image('B3',
                              tf.reshape(regressed_imgs[1],
                                         self.shapes['img_shape']))
-            tf.summary.image('c3',
+            tf.summary.image('C3_horizontal',
                              tf.reshape(regressed_imgs[2],
+                                        self.shapes['img_shape']))
+            tf.summary.image('C1',
+                             tf.reshape(regressed_imgs[3],
+                                        self.shapes['img_shape']))
+            tf.summary.image('C2',
+                             tf.reshape(regressed_imgs[4],
+                                        self.shapes['img_shape']))
+            tf.summary.image('C3_vertical',
+                             tf.reshape(regressed_imgs[5],
                                         self.shapes['img_shape']))
 
         return regressed_imgs
@@ -200,11 +211,10 @@ class Model:
 
         # Regression loss
         with tf.name_scope("regress_loss"):
-            regress_result = tf.gather(self.regress, [0, 1])
-            expected_output = tf.gather(self.img_placeholder, [2, 5])
+            regress_result = tf.gather(self.regress, [0, 1, 3, 4])
+            expected_output = tf.gather(self.img_placeholder, [A3, B3, C1, C2])
             mse = tf.reduce_mean(
                 tf.squared_difference(regress_result, expected_output))
-            #psnr = 10 * tf.log(mse) / np.log(10)
             regress_loss = mse
             tf.summary.scalar('regress_loss', regress_loss)
 
@@ -247,7 +257,7 @@ class Model:
     def _calculate_distances(self, actual, regression):
         distances = np.zeros(8)
         for i in range(8):
-            mse = np.average(np.square(actual[i + 8] - regression[2]))
+            mse = np.average(np.square(actual[i + 8] - (regression[2] + regression[5]) / 2))
             psnr = -10 * np.log10(mse)
             distances[i] = psnr
         return distances
